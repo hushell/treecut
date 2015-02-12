@@ -1,4 +1,4 @@
-function [aloglik,loglik] = average_loglik(Y)
+function [aloglik,loglik] = gaussian_loglik(Y)
 % Y = [y1;...;yN]
 
 [N,D] = size(Y);

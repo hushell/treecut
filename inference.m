@@ -32,7 +32,7 @@ segTree.llik = zeros(numTotalNodes,1);
 for i = 1:numTotalNodes
     pidx = ismember(segMap, leafsUnder{i});
     rgb = double([img1(pidx), img2(pidx), img3(pidx)]); % m x 3
-    [allik,ll] = average_loglik(rgb);
+    [allik,ll] = gaussian_loglik(rgb);
     segTree.allik(i) = allik;
     segTree.llik(i) = ll;
     fprintf('node %d: allik = %e, ll = %e\n', i, allik, ll);
