@@ -1,3 +1,6 @@
+clear all
+close all
+
 % prepare data
 load data/trees/100075_tree.mat % tree
 img = imread('data/images/100075.jpg');
