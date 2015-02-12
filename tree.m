@@ -1,30 +1,24 @@
 classdef tree
     properties
+        nodeNames;
+        nodeLabels=[];
+        numLeafNodes;
+        numTotalNodes;
         % parent pointers
         pp = [];
-        nodeNames;
-        nodeFeatures;
-        leafFeatures=[];
         % the parent pointers do not save which is the left and right child of each node, hence:
         % numNodes x 2 matrix of kids, [0 0] for leaf nodes
         kids = [];
         % matrix (maybe sparse) with L x S, L = number of unique labels, S= number of segments
         % ground truth:
-        nodeLabels=[];
-        % categories: computed activations (not softmaxed)
-        catAct = [];
-        catOut = [];
-        % computed category
-        nodeCat = [];
-        
-        % if we have the ground truth, this vector tells us which leaf labels were correctly classified
-        nodeCatsRight=0;
-        
-        % for structure prediction we want to maximize the scores
-        score=0;
-        % for optimizing the labeled structure, we minimize the cost
-        cost=0;
-        nodeScores=[];
+        allik = [];
+        llik = [];
+        activeNodes = [];
+        E = [];
+        M = [];
+        v = [];
+        posterior = [];
+        leafsUnder = {};
     end
     
     methods
