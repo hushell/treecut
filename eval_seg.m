@@ -1,4 +1,4 @@
-function [PRI, VOI] = eval_seg(segMap, segLabels, groundTruth)
+function [PRI, VOI, labMap] = eval_seg(segMap, segLabels, groundTruth)
 %
 
 numSegs = length(segLabels);

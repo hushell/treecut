@@ -10,13 +10,14 @@ aloglik = loglik / N;
 
 
 function y = logdet(A)
-% Written by Tom Minka
 
 % if any(eig(A) <= 0)
 %     y = log(det(A));
 %     return
 % end
 % 
+% Written by Tom Minka
 % U = chol(A);
 % y = 2*sum(log(diag(U)));
-y = log(det(A));
+
+y = log(det(A) + 1e-12);
