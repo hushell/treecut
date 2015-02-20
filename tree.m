@@ -133,36 +133,42 @@ classdef tree
 
         end % plotTree
         
-        function plotForest(obj, segLabels)
+        function plotForest(obj, a_n)
+            if nargin < 2
+                a_n = obj.activeNodes;
+            end
 
-            labsPool = unique(segLabels);
-            numLabs = numel(labsPool);
-            colMap = hsv(numLabs);
+            assert(length(a_n) == obj.numTotalNodes);
+            colMap = hsv(sum(a_n));
             
-            pp = obj.pp';
-            [x,y,h]=treelayout(pp);
-
-            for n = 1:numLabs
-                p = labsPool(n);
-                if p <= obj.numLeafNodes
-                    plot (x(p), y(p), 'Color', colMap(n,:), 'LineStyle', 'o'); hold on
-                    continue
-                end
-                
-                f = [obj.leafsUnder{p} obj.numLeafNodes+1:p-1];
-                ppf = pp(f);
-                X = [x(f); x(ppf); NaN(size(f))];
-                Y = [y(f); y(ppf); NaN(size(f))];
-                X = X(:);
-                Y = Y(:);
-
-                plot (X, Y, 'Color', colMap(n,:), 'LineStyle', '-'); hold on
+            p = obj.pp';
+            [x,y,h]=treelayout(p);
+            f = find(p~=0);
+            ppf = p(f);
+            X = [x(f); x(ppf); NaN(size(f))];
+            Y = [y(f); y(ppf); NaN(size(f))];
+            X = X(:);
+            Y = Y(:);
+            
+            n = length(p);
+            if n < 500,
+                plot (x, y, 'wo', X, Y, 'b-');
+            else
+                plot (X, Y, 'r-');
+            end;
+            hold on 
+            
+            i = 1;
+            nn = find(a_n == 1);
+            for n = nn'
+                colMap(i,:)
+                plot (x(n), y(n), 'LineStyle', 'o', 'LineWidth', 4, 'Color', colMap(i,:)); hold on
+                i = i + 1;
             end
             hold off
-            
+
             xlabel(['height = ' int2str(h)]);
             axis([0 1 0 1]);
-            
         end % plotForest
         
     end % methods

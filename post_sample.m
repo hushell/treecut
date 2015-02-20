@@ -1,5 +1,5 @@
 function samples = post_sample(segTree, N)
-%
+% TODO: output prob that a pixel is on boundary
 
 numTotalNodes = segTree.numTotalNodes;
 numLeafNodes = segTree.numLeafNodes;

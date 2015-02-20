@@ -40,7 +40,9 @@ for i = numLeafNodes+1:numTotalNodes
     post = exp(PD - E_i);
     segTree.E(i) = E_i;
     segTree.posterior(i) = post;
-    %fprintf('node %d (sum): post = %f, PD = %e, PI = %e\n', i, post, PD, PI);
+    if verbose
+        fprintf('node %d (sum): post = %f, PD = %e, PI = %e\n', i, post, PD, PI);
+    end
 
     % Mi = max(log_pi + Li, log(1-pi) + Mil + Mir)
     %M_il = segTree.M(il) * scal;
