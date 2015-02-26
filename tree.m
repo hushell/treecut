@@ -9,8 +9,7 @@ classdef tree
         % the parent pointers do not save which is the left and right child of each node, hence:
         % numNodes x 2 matrix of kids, [0 0] for leaf nodes
         kids = [];
-        % matrix (maybe sparse) with L x S, L = number of unique labels, S= number of segments
-        % ground truth:
+        ucm = [];
         allik = [];
         llik = [];
         activeNodes = [];

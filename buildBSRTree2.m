@@ -26,6 +26,7 @@ assert(all([1:numTotalSegs]' == unique(sp_id)));
 thisTree = tree();
 thisTree.pp = zeros(numTotalSuperSegs,1); % we have numRemSegs many leaf nodes and numRemSegs-1 many nonterminals
 thisTree.kids = zeros(numTotalSuperSegs,2);
+thisTree.ucm = zeros(numTotalSuperSegs,1);
 % thisTree.numLeafNodes = numTotalSegs; 
 
 % PRI = zeros(size(thres_arr));
@@ -55,6 +56,7 @@ for i = 2:length(thres_arr)
             thisTree.pp(involve_nods(1)) = sup_nod_id;
             thisTree.pp(involve_nods(2)) = sup_nod_id;
             thisTree.kids(sup_nod_id,:) = involve_nods(1:2)';
+            thisTree.ucm(sup_nod_id) = k;
             %init_map(lab_map == j) = sup_nod_id;
             joint_loc = init_map == involve_nods(1) | init_map == involve_nods(2);
             init_map(joint_loc) = sup_nod_id;
