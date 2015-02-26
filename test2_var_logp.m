@@ -39,3 +39,7 @@ for i = 1:n_r
         %imagesc(labMap);
     end
 end
+
+bar(exp(log_ps), grid_PRI);
+figure; bar(exp(log_ps), grid_VOI);
+figure; bar(exp(log_ps), grid_nLab);

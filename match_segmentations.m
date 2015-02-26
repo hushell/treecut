@@ -3,6 +3,9 @@ function [matches ] = match_segmentations(seg, groundTruth)
 % based on PASCAL evaluation code:
 % http://pascallin.ecs.soton.ac.uk/challenges/VOC/voc2010/index.html#devkit
 
+% TODO: output covering
+% NOTE: evaluation_reg_image() and collect_eval_reg() doesn't use covering but recall to select scale
+
 total_gt = 0;
 for s = 1 : numel(groundTruth)
     total_gt = total_gt + max(groundTruth{s}.Segmentation(:));

@@ -132,9 +132,14 @@ classdef tree
 
         end % plotTree
         
-        function plotForest(obj, a_n)
+        function plotForest(obj, g_thres, a_n)
+            if nargin < 3
+                a_n = obj.activeNodes;
+            end
+            
             if nargin < 2
                 a_n = obj.activeNodes;
+                g_thres = 1;
             end
 
             assert(length(a_n) == obj.numTotalNodes);
@@ -149,6 +154,7 @@ classdef tree
             X = X(:);
             Y = Y(:);
             
+            % plot tree
             n = length(p);
             if n < 500,
                 plot (x, y, 'wo', X, Y, 'b-');
@@ -157,13 +163,29 @@ classdef tree
             end;
             hold on 
             
+            % plot active nodes
             i = 1;
             nn = find(a_n == 1);
             for n = nn'
-                colMap(i,:)
                 plot (x(n), y(n), 'LineStyle', 'o', 'LineWidth', 4, 'Color', colMap(i,:)); hold on
                 i = i + 1;
             end
+            
+            % plot ucm thresholded nodes
+            if ~isempty(obj.ucm) 
+                ucm_flag = zeros(obj.numLeafNodes,1);
+                nn = find(obj.ucm == g_thres);
+                nn = nn(end);
+
+                for n = nn:-1:1
+                    if any(ucm_flag(obj.leafsUnder{n}))
+                        continue
+                    end
+                    plot (x(n), y(n), 'LineStyle', '+', 'MarkerSize', 20, 'Color', 'k'); hold on
+                    ucm_flag(obj.leafsUnder{n}) = 1;
+                end
+            end
+            
             hold off
 
             xlabel(['height = ' int2str(h)]);

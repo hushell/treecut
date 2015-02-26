@@ -4,12 +4,12 @@ close all
 pt_path = 'output/processed_trees/';
 
 % prepare data
-load data/trees/100075_tree.mat % tree
-img = imread('data/images/100075.jpg');
-load data/ucm2/100075.mat % ucm2
+load output/trees/train/100075_tree.mat % tree
+img = imread('data/images/train/100075.jpg');
+load data/ucm2/train/100075.mat % ucm2
 ucm = ucm2(3:2:end, 3:2:end);
 segMap = bwlabel(ucm <= 0, 4);
-load data/groundTruth/100075.mat % gt
+load data/groundTruth/train/100075.mat % gt
 nsegs = numel(groundTruth);
 for s = 1:nsegs
     groundTruth{s}.Segmentation = double(groundTruth{s}.Segmentation);

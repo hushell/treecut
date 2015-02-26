@@ -4,12 +4,12 @@ close all
 pt_path = 'output/processed_trees/';
 
 % prepare data
-load data/trees/100075_tree.mat % tree
-img = imread('data/images/100075.jpg');
-load data/ucm2/100075.mat % ucm2
+load output/trees/train/100075_tree.mat % tree
+img = imread('data/images/train/100075.jpg');
+load data/ucm2/train/100075.mat % ucm2
 ucm = ucm2(3:2:end, 3:2:end);
 segMap = bwlabel(ucm <= 0, 4);
-load data/groundTruth/100075.mat % gt
+load data/groundTruth/train/100075.mat % gt
 nsegs = numel(groundTruth);
 for s = 1:nsegs
     groundTruth{s}.Segmentation = double(groundTruth{s}.Segmentation);
@@ -26,11 +26,16 @@ fprintf('PRI = %.2f, VOI = %.2f, nSeg = %d\n', PRI, VOI, numel(unique(segLabels)
 imagesc(labMap);
 
 % samples
-N = 6;
+N = 100;
 samples = post_sample(aftTree, N);
+ave_img = zeros(size(segMap));
 for n = 1:N
     [PRI, VOI, labMap] = eval_seg(segMap, samples{n}, groundTruth);
-    fprintf('PRI = %.2f, VOI = %.2f, nSeg = %d\n', PRI, VOI, numel(unique(samples{n})));
-    figure; imagesc(labMap);
+    %fprintf('PRI = %.2f, VOI = %.2f, nSeg = %d\n', PRI, VOI, numel(unique(samples{n})));
+    %figure; imagesc(labMap);
     %figure; vis_seg(segMap, img, samples{n});
+    bdry = seg2bdry(labMap, 'imageSize');
+    ave_img = ave_img + bdry;
 end
+
+ave_img = ave_img / N;
