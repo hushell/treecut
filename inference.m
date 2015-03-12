@@ -14,6 +14,7 @@ llik = segTree.llik * scal;
 segTree.E = zeros(numTotalNodes,1);
 segTree.M = zeros(numTotalNodes,1);
 segTree.posterior = zeros(numTotalNodes,1);
+segTree.marginals = zeros(numTotalNodes,1);
 segTree.v = ones(numTotalNodes,1); % 1--govern 2--cut
 
 segTree.E(1:numLeafNodes) = llik(1:numLeafNodes);
@@ -45,8 +46,6 @@ for i = numLeafNodes+1:numTotalNodes
     end
 
     % Mi = max(log_pi + Li, log(1-pi) + Mil + Mir)
-    %M_il = segTree.M(il) * scal;
-    %M_ir = segTree.M(ir) * scal;
     M_il = segTree.M(il);
     M_ir = segTree.M(ir);
     PD_m = log(p_i) + L_i; 
@@ -56,6 +55,31 @@ for i = numLeafNodes+1:numTotalNodes
     if verbose
         fprintf('node %d (max): v_i = %d, PD* = %e, PI* = %e, diff = %e\n', i, v_i, PD_m, PI_m, PD_m-PI_m);
     end
+end
+
+tot_E = segTree.E(end);
+for i = numTotalNodes:-1:1
+    %kids = segTree.getKids(i);
+    %il = kids(1); ir = kids(2);
+    p_i = pp(i);
+    L_i = llik(i);
+
+    path_i_root = [];
+    par = segTree.pp(i);
+    while par ~= 0
+        path_i_root(end+1) = par;
+        par = segTree.pp(par);
+    end
+    
+    kc = segTree.getKids(path_i_root);
+    kc = kc(:);
+    kc = setdiff(kc, [i, path_i_root]);
+    assert(length(kc) == length(path_i_root));
+
+    prior = log(p_i) + sum(log(1-pp(path_i_root)));
+    cond_lik = L_i + sum(segTree.E(kc));
+    segTree.marginals(i) = prior + cond_lik - tot_E;
+    fprintf('prior = %f, cond_lik = %f, log_pp = %f\n', prior, cond_lik, exp(segTree.marginals(i)));
 end
 
 %% top-down backtracking

@@ -17,6 +17,7 @@ classdef tree
         M = [];
         v = [];
         posterior = [];
+        marginals = [];
         leafsUnder = {};
     end
     

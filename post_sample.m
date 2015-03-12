@@ -7,9 +7,10 @@ samples = cell(1,N);
 
 for n = 1:N
     unirand = rand(numTotalNodes,1);
-    activeNodes = unirand < segTree.posterior;
+    %activeNodes = unirand < segTree.posterior;
+    activeNodes = unirand <= exp(segTree.marginals); % monte carlo
     
-    segLabels = zeros(numLeafNodes,1);
+    segLabels = 1:numLeafNodes;
     for i = 1:numTotalNodes
         if activeNodes(i) == 1
             segLabels(segTree.leafsUnder{i}) = i;
