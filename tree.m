@@ -140,7 +140,7 @@ classdef tree
             
             if nargin < 2
                 a_n = obj.activeNodes;
-                g_thres = 1;
+                g_thres = max(obj.ucm);
             end
 
             assert(length(a_n) == obj.numTotalNodes);
@@ -172,7 +172,7 @@ classdef tree
                 i = i + 1;
             end
             
-            % plot ucm thresholded nodes
+            % plot nodes corresponding to ucm threshold
             if ~isempty(obj.ucm) 
                 ucm_flag = zeros(obj.numLeafNodes,1);
                 nn = find(obj.ucm == g_thres);

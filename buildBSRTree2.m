@@ -27,6 +27,7 @@ thisTree = tree();
 thisTree.pp = zeros(numTotalSuperSegs,1); % we have numRemSegs many leaf nodes and numRemSegs-1 many nonterminals
 thisTree.kids = zeros(numTotalSuperSegs,2);
 thisTree.ucm = zeros(numTotalSuperSegs,1);
+thisTree.nodeNames = 1:numTotalSuperSegs;
 % thisTree.numLeafNodes = numTotalSegs; 
 
 % PRI = zeros(size(thres_arr));

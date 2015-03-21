@@ -57,30 +57,30 @@ for i = numLeafNodes+1:numTotalNodes
     end
 end
 
-% tot_E = segTree.E(end);
-% for i = numTotalNodes:-1:1
-%     %kids = segTree.getKids(i);
-%     %il = kids(1); ir = kids(2);
-%     p_i = pp(i);
-%     L_i = llik(i);
-% 
-%     path_i_root = [];
-%     par = segTree.pp(i);
-%     while par ~= 0
-%         path_i_root(end+1) = par;
-%         par = segTree.pp(par);
-%     end
-%     
-%     kc = segTree.getKids(path_i_root);
-%     kc = kc(:);
-%     kc = setdiff(kc, [i, path_i_root]);
-%     assert(length(kc) == length(path_i_root));
-% 
-%     prior = log(p_i) + sum(log(1-pp(path_i_root)));
-%     cond_lik = L_i + sum(segTree.E(kc));
-%     segTree.marginals(i) = prior + cond_lik - tot_E;
-%     fprintf('prior = %f, cond_lik = %f, log_pp = %f\n', prior, cond_lik, exp(segTree.marginals(i)));
-% end
+tot_E = segTree.E(end);
+for i = numTotalNodes:-1:1
+    %kids = segTree.getKids(i);
+    %il = kids(1); ir = kids(2);
+    p_i = pp(i);
+    L_i = llik(i);
+
+    path_i_root = [];
+    par = segTree.pp(i);
+    while par ~= 0
+        path_i_root(end+1) = par;
+        par = segTree.pp(par);
+    end
+    
+    kc = segTree.getKids(path_i_root);
+    kc = kc(:);
+    kc = setdiff(kc, [i, path_i_root]);
+    assert(length(kc) == length(path_i_root));
+
+    prior = log(p_i) + sum(log(1-pp(path_i_root)));
+    cond_lik = L_i + sum(segTree.E(kc));
+    segTree.marginals(i) = prior + cond_lik - tot_E;
+    fprintf('prior = %f, cond_lik = %f, log_pp = %f\n', prior, cond_lik, exp(segTree.marginals(i)));
+end
 
 %% top-down backtracking
 global activeNodes
