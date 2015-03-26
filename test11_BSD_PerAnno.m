@@ -59,6 +59,13 @@ for i = 1:numel(all_files)
         for s = 1:numSegs
             labMap(segMap == s) = segLabels(s);
         end
+        %labMap = padarray(labMap, [1,1]);
+        %filling in edge pixels
+        el = strel('diamond',1);
+        for i = 1:2
+           tmp = imdilate(labMap,el);
+           labMap(labMap == 0) = tmp(labMap == 0);
+        end
 
         i_labMap{j} = labMap; 
     end
