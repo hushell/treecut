@@ -62,7 +62,7 @@ for i = 1:numel(all_files)
         %labMap = padarray(labMap, [1,1]);
         %filling in edge pixels
         el = strel('diamond',1);
-        for i = 1:2
+        for r = 1:2
            tmp = imdilate(labMap,el);
            labMap(labMap == 0) = tmp(labMap == 0);
         end
