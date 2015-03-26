@@ -13,8 +13,8 @@ all_files = dir(ucm2_dir);
 mat       = arrayfun(@(x) ~isempty(strfind(x.name, '.mat')), all_files);
 all_files = all_files(logical(mat));
 
-all_grid_segLabels = cell(1,numel(all_files));
-all_grid_R = cell(1,numel(all_files));
+all_perAnnoR = cell(1,numel(all_files));
+all_perAnnoR_UCM = cell(1,numel(all_files));
 
 cumCntR = 0;
 cumSumR = 0;
@@ -49,6 +49,21 @@ for i = 1:numel(all_files)
     log_ps = [log_ps log(0.99) log(0.999) log(0.9999) log(0.99999) log(0.999999)];
     n_s = n_s + 5;
 
+    i_labMap = cell(1,n_s);
+    for j = 1:n_s
+        p = exp(log_ps(j));
+        [~,segLabels] = inference_temp(thisTree, p, scal);
+
+        numSegs = length(segLabels);
+        labMap = zeros(size(segMap));
+        for s = 1:numSegs
+            labMap(segMap == s) = segLabels(s);
+        end
+
+        i_labMap{j} = labMap; 
+    end
+
+    perAnnoR = zeros(1,nsegs);
     for a = 1:nsegs
         perGT = groundTruth(a);
         bestR = 0;
@@ -57,10 +72,7 @@ for i = 1:numel(all_files)
         bestj = 0;
 
         for j = 1:n_s
-            p = exp(log_ps(j));
-            [aftTree,segLabels] = inference_temp(thisTree, p, scal);
-            
-            [PRI, VOI, labMap] = eval_seg(segMap, segLabels, perGT);
+            labMap = i_labMap{j};
             [cntR, sumR] = covering_rate_ois(labMap, perGT);
 
             R = cntR ./ (sumR + (sumR==0));
@@ -75,12 +87,17 @@ for i = 1:numel(all_files)
         cumCntR = cumCntR + bestCntR;
         cumSumR = cumSumR + bestSumR;
 
-        fprintf('TC: img %d, anno %d -- perAnnoCOV = %f at p = %f\n', i, a, bestR, bestj);
+        perAnnoR(a) = bestR;
+
+        fprintf('TC: img %d, anno %d -- perAnnoCOV = %f at p = %f\n', i, a, bestR, exp(log_ps(bestj)));
     end % a
+
+    all_perAnnoR{i} = perAnnoR;
 
     % test UCM
     el = strel('diamond',1);
 
+    perAnnoR = zeros(1,nsegs);
     for a = 1:nsegs
         perGT = groundTruth(a);
         bestR = 0;
@@ -111,8 +128,10 @@ for i = 1:numel(all_files)
         cumCntRUCM = cumCntRUCM + bestCntR;
         cumSumRUCM = cumSumRUCM + bestSumR;
 
-        fprintf('UCM: img %d, anno %d -- perAnnoCOV = %f at p = %f\n', i, a, bestR, bestj);
+        fprintf('UCM: img %d, anno %d -- perAnnoCOV = %f at p = %f\n', i, a, bestR, thres_arr(bestj));
     end % a
+
+    all_perAnnoR_UCM{i} = perAnnoR;
         
 end % i 
 
