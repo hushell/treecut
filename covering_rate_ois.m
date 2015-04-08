@@ -1,9 +1,9 @@
-function [cntR, sumR] = covering_rate_ois(seg, groundTruth)
+function [cntR, sumR, regInd, covRate] = covering_rate_ois(seg, groundTruth)
 %
 
 [matches] = match_segmentations(seg, groundTruth);
-matchesGT = max(matches, [], 1);
-    
+[matchesGT, regInd] = max(matches, [], 1);
+
 nsegs = numel(groundTruth);
 regionsGT = [];
 total_gt = 0;
@@ -21,3 +21,11 @@ for r = 1 : numel(regionsGT),
     sumR = sumR + regionsGT(r).Area;
 end
 
+if nargout > 2
+    regions = regionprops(seg, 'Area');
+    cntS = 0;
+    for s = unique(regInd)
+        cntS = cntS + regions(s).Area;
+    end
+    covRate = cntS / numel(seg);
+end

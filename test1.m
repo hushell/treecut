@@ -22,29 +22,9 @@ thisTree = tree_preprocess(thisTreePath, thisTree, img, segMap);
 segLabels = shuffle_labels(segLabels);
 %vis_seg(segMap, img, segLabels);
 [PRI, VOI, labMap] = eval_seg(segMap, segLabels, groundTruth);
-[cntR, sumR] = covering_rate_ois(labMap, groundTruth);
+[cntR, sumR, regInd, covRate] = covering_rate_ois(labMap, groundTruth);
 R = cntR ./ (sumR + (sumR==0));
-fprintf('PRI = %.2f, VOI = %.2f, COV = %.2f, nSeg = %d\n', PRI, VOI, R, numel(unique(segLabels)));
+fprintf('PRI = %.2f, VOI = %.2f, COV = %.2f, nSeg = %d, covRate = %f\n', PRI, VOI, R, numel(unique(segLabels)), covRate);
 imagesc(labMap);
 
-return 
-
-% samples
-N = 6;
-samples = post_sample(aftTree, N);
-for n = 1:N
-    figure; vis_seg(segMap, img, samples{n});
-end
-close all
- 
-% check different p's
-%pps = [0.001, 0.01, 0.1, 0.9, 0.99, 0.999];
-%pps = [0.999 0.9999 0.999999];
-pps = 0.1:0.1:0.8;
-for p = pps
-    [aftTree,segLabels] = inference(thisTree, img, segMap, p, 0.9);
-    [PRI, VOI] = eval_seg(segMap, segLabels, groundTruth);
-    fprintf('*** p = %f, PRI = %f, VOI = %f\n', p, PRI, VOI);
-    figure(int32(p*10000)); vis_seg(segMap, img, segLabels); 
-    pause
-end
+figure; imagesc(ismember(labMap, regInd));

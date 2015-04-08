@@ -16,6 +16,9 @@ all_files = all_files(logical(mat));
 all_perAnnoR = cell(1,numel(all_files));
 all_perAnnoR_UCM = cell(1,numel(all_files));
 
+all_p = cell(1,numel(all_files));
+all_k = cell(1,numel(all_files));
+
 cumCntR = 0;
 cumSumR = 0;
 cumCntRUCM = 0;
@@ -41,70 +44,71 @@ for i = 1:numel(all_files)
     thisTreePath = [pt_dir name '_tree.mat'];
     thisTree = tree_preprocess(thisTreePath, thisTree, img, segMap);
     
-    % test treecut
-    scal = 1e-3;
-    n_r = 1;
-    n_s = 50;
-    log_ps = linspace(-2.5,-0.005,n_s); % exp(-2.5) ~ 0.08, exp(-0.1) = 0.9
-    log_ps = [log_ps log(0.99) log(0.999) log(0.9999) log(0.99999) log(0.999999)];
-    n_s = n_s + 5;
+    %% test treecut
+    %scal = 1e-3;
+    %n_r = 1;
+    %n_s = 50;
+    %log_ps = linspace(-2.5,-0.005,n_s); % exp(-2.5) ~ 0.08, exp(-0.1) = 0.9
+    %log_ps = [log_ps log(0.99) log(0.999) log(0.9999) log(0.99999) log(0.999999)];
+    %n_s = n_s + 5;
 
-    i_labMap = cell(1,n_s);
-    for j = 1:n_s
-        p = exp(log_ps(j));
-        [~,segLabels] = inference_temp(thisTree, p, scal);
+    %i_labMap = cell(1,n_s);
+    %for j = 1:n_s
+    %    p = exp(log_ps(j));
+    %    [~,segLabels] = inference_temp(thisTree, p, scal);
 
-        numSegs = length(segLabels);
-        labMap = zeros(size(segMap));
-        for s = 1:numSegs
-            labMap(segMap == s) = segLabels(s);
-        end
-        %labMap = padarray(labMap, [1,1]);
-        %filling in edge pixels
-        el = strel('diamond',1);
-        for r = 1:2
-           tmp = imdilate(labMap,el);
-           labMap(labMap == 0) = tmp(labMap == 0);
-        end
+    %    numSegs = length(segLabels);
+    %    labMap = zeros(size(segMap));
+    %    for s = 1:numSegs
+    %        labMap(segMap == s) = segLabels(s);
+    %    end
+    %    %labMap = padarray(labMap, [1,1]);
+    %    %filling in edge pixels
+    %    el = strel('diamond',1);
+    %    for r = 1:2
+    %       tmp = imdilate(labMap,el);
+    %       labMap(labMap == 0) = tmp(labMap == 0);
+    %    end
 
-        i_labMap{j} = labMap; 
-    end
+    %    i_labMap{j} = labMap; 
+    %end
 
-    perAnnoR = zeros(1,nsegs);
-    for a = 1:nsegs
-        perGT = groundTruth(a);
-        bestR = 0;
-        bestCntR = 0;
-        bestSumR = 0;
-        bestj = 0;
+    %perAnnoR = zeros(1,nsegs);
+    %for a = 1:nsegs
+    %    perGT = groundTruth(a);
+    %    bestR = 0;
+    %    bestCntR = 0;
+    %    bestSumR = 0;
+    %    bestj = 0;
 
-        for j = 1:n_s
-            labMap = i_labMap{j};
-            [cntR, sumR] = covering_rate_ois(labMap, perGT);
+    %    for j = 1:n_s
+    %        labMap = i_labMap{j};
+    %        [cntR, sumR] = covering_rate_ois(labMap, perGT);
 
-            R = cntR ./ (sumR + (sumR==0));
-            if R > bestR
-                bestR = R;
-                bestCntR = cntR;
-                bestSumR = sumR;
-                bestj = j;
-            end
-        end % j
-        
-        cumCntR = cumCntR + bestCntR;
-        cumSumR = cumSumR + bestSumR;
+    %        R = cntR ./ (sumR + (sumR==0));
+    %        if R > bestR
+    %            bestR = R;
+    %            bestCntR = cntR;
+    %            bestSumR = sumR;
+    %            bestj = j;
+    %        end
+    %    end % j
+    %    
+    %    cumCntR = cumCntR + bestCntR;
+    %    cumSumR = cumSumR + bestSumR;
 
-        perAnnoR(a) = bestR;
+    %    perAnnoR(a) = bestR;
 
-        fprintf('TC: img %d, anno %d -- perAnnoCOV = %f at p = %f\n', i, a, bestR, exp(log_ps(bestj)));
-    end % a
+    %    fprintf('TC: img %d, anno %d -- perAnnoCOV = %f at p = %f\n', i, a, bestR, exp(log_ps(bestj)));
+    %end % a
 
-    all_perAnnoR{i} = perAnnoR;
+    %all_perAnnoR{i} = perAnnoR;
 
     % test UCM
     el = strel('diamond',1);
 
     perAnnoR = zeros(1,nsegs);
+    perAnnoK = zeros(1,nsegs);
     for a = 1:nsegs
         perGT = groundTruth(a);
         bestR = 0;
@@ -121,7 +125,7 @@ for i = 1:numel(all_files)
                labMap(labMap == 0) = tmp(labMap == 0);
             end
             
-            [cntR, sumR] = covering_rate_ois(labMap, perGT);
+            [cntR, sumR, regInd, covRate] = covering_rate_ois(labMap, perGT);
 
             R = cntR ./ (sumR + (sumR==0));
             if R > bestR
@@ -135,10 +139,13 @@ for i = 1:numel(all_files)
         cumCntRUCM = cumCntRUCM + bestCntR;
         cumSumRUCM = cumSumRUCM + bestSumR;
 
-        fprintf('UCM: img %d, anno %d -- perAnnoCOV = %f at p = %f\n', i, a, bestR, thres_arr(bestj));
+        perAnnoK(a) = thres_arr(bestj);
+
+        fprintf('UCM: img %d, anno %d -- perAnnoCOV = %f at p = %f, covRate = %f\n', i, a, bestR, thres_arr(bestj), covRate);
     end % a
 
     all_perAnnoR_UCM{i} = perAnnoR;
+    all_k{i} = perAnnoR;
         
 end % i 
 
