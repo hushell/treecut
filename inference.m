@@ -9,6 +9,9 @@ numLeafNodes = segTree.numLeafNodes;
 numTotalNodes = segTree.numTotalNodes;
 llik = segTree.llik * scal;
 
+pp = zeros(numTotalNodes,1);
+pp(:) = p; % global p(v_i)
+
 %% bottom-up phase: E(i) = P(Y_i) 
 % leaves
 segTree.E = zeros(numTotalNodes,1);
@@ -19,10 +22,8 @@ segTree.v = ones(numTotalNodes,1); % 1--govern 2--cut
 
 segTree.E(1:numLeafNodes) = llik(1:numLeafNodes);
 segTree.M(1:numLeafNodes) = llik(1:numLeafNodes);
-segTree.posterior(1:numLeafNodes) = 1;
-
-pp = zeros(numTotalNodes,1);
-pp(:) = p; % global p(v_i)
+segTree.posterior(1:numLeafNodes) = pp(1:numLeafNodes);
+%segTree.posterior(1:numLeafNodes) = 1;
 
 % E, M, posterior, v 
 for i = numLeafNodes+1:numTotalNodes

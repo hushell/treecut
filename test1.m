@@ -18,11 +18,13 @@ end
 % p = 0.9, scale = 0.9
 thisTreePath = [pt_path 'train/100075_tree.mat'];
 thisTree = tree_preprocess(thisTreePath, thisTree, img, segMap);
-[aftTree,segLabels] = inference(thisTree, 0.99, 1e-3);
+[aftTree,segLabels] = inference(thisTree, 0.999, 1e-3);
 segLabels = shuffle_labels(segLabels);
 %vis_seg(segMap, img, segLabels);
 [PRI, VOI, labMap] = eval_seg(segMap, segLabels, groundTruth);
-fprintf('PRI = %.2f, VOI = %.2f, nSeg = %d\n', PRI, VOI, numel(unique(segLabels)));
+[cntR, sumR] = covering_rate_ois(labMap, groundTruth);
+R = cntR ./ (sumR + (sumR==0));
+fprintf('PRI = %.2f, VOI = %.2f, COV = %.2f, nSeg = %d\n', PRI, VOI, R, numel(unique(segLabels)));
 imagesc(labMap);
 
 return 

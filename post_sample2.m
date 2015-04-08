@@ -30,7 +30,10 @@ end
 
 kids = segTree.getKids(curr);
 il = kids(1); ir = kids(2);
-assert(il > 0 && ir > 0);
+%assert(il > 0 && ir > 0);
+if ~any(kids)
+    return
+end
 
 % pre-order traversal
 backtrack(segTree, il);
