@@ -1,4 +1,4 @@
-function [gtTree, gt_lliks, gt_labs] = best_gt_trees(seg, groundTruth, segTree, p, scal)
+function [gtTree, gt_lliks, gt_labs] = best_gt_trees(seg, groundTruth, segTree)%, p, scal)
 %
 
 numLeafNodes = segTree.numLeafNodes;
@@ -11,17 +11,17 @@ assert(numel(unique(seg(seg>0))) == numLeafNodes);
 
 ave_llik = zeros(numTotalNodes,1);
 gtTree = segTree;
-llik = zeros(numTotalNodes,1);
 
 for i = 1:nGT
     gt_seg = groundTruth{i}.Segmentation;
     seg_cnts = seg_gt_counts(seg, gt_seg);
     
+    llik = zeros(numTotalNodes,1);
     for n = 1:numTotalNodes
         llik(n) = purity_lik(seg_cnts, gtTree.leafsUnder{n});
     end
     
-    gtTree.llik = llik;
+    %gtTree.llik = llik;
     %[gtTree, gtLabels] = inference(gtTree, p, scal);
     
     gt_lliks{i} = llik;
