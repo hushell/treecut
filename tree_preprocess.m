@@ -40,9 +40,9 @@ for i = 1:numTotalNodes
     [allik,ll] = gaussian_loglik(rgb);
     segTree.allik(i) = allik;
     segTree.llik(i) = ll;
-    fprintf('node %d: allik = %e, llik = %e\n', i, allik, ll);
+    %fprintf('node %d: allik = %e, llik = %e\n', i, allik, ll);
 end
-fprintf('--------------\n');
+%fprintf('--------------\n');
 
 %% save
 save(processed, 'segTree');

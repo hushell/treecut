@@ -34,7 +34,7 @@ grid_COV = zeros(n_r,n_s,nsubj,nis);
 cntR_best = 0;
 sumR_best = 0;
 
-for i = 1:numel(all_iids)
+for i = 1:nis
     % prepare data
     iid = all_iids(i);
     name = num2str(iid);
@@ -45,7 +45,7 @@ for i = 1:numel(all_iids)
     ucm = ucm2(3:2:end, 3:2:end); % ucm
     segMap = bwlabel(ucm <= 0, 4); % seg
     for s = 1:nsegs
-        groundTruth{s}.Segmentation = double(all_segs{i}); % gt
+        groundTruth{s}.Segmentation = double(all_segs{i}{s}); % gt
     end
     
     % preprocess tree
@@ -112,6 +112,9 @@ end % i
 [COV_g, p_g] = max(sum(grid_COV(1,:,3,:),4));
 [COV_1, p_1] = max(sum(grid_COV(1,:,1,:),4));
 [COV_2, p_2] = max(sum(grid_COV(1,:,2,:),4));
+p_g = exp(log_ps(p_g));
+p_1 = exp(log_ps(p_1));
+p_2 = exp(log_ps(p_2));
 
 fprintf('COV_g = %f, p_g = %f; COV_1 = %f, p_1 = %f; COV_2 = %f, p_2 = %f;\n', COV_g, p_g, COV_1, p_1, COV_2, p_2);
 fprintf(fp, 'COV_g = %f, p_g = %f; COV_1 = %f, p_1 = %f; COV_2 = %f, p_2 = %f;\n', COV_g, p_g, COV_1, p_1, COV_2, p_2);
@@ -128,7 +131,7 @@ for i = 1:nis
     ucm = ucm2(3:2:end, 3:2:end); % ucm
     segMap = bwlabel(ucm <= 0, 4); % seg
     for s = 1:nsegs
-        groundTruth{s}.Segmentation = double(all_segs{i}); % gt
+        groundTruth{s}.Segmentation = double(all_segs{i}{s}); % gt
     end
     
     % preprocess tree
