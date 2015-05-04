@@ -109,15 +109,28 @@ for i = 1:nis
     fprintf(fp, 'img %d: best_COV = (%f,%f,%f)\n', i, max(grid_COV(1,:,1,i)),max(grid_COV(1,:,2,i)),max(grid_COV(1,:,3,i)));
 end % i 
 
-[COV_g, p_g] = max(sum(grid_COV(1,:,3,:),4));
-[COV_1, p_1] = max(sum(grid_COV(1,:,1,:),4));
-[COV_2, p_2] = max(sum(grid_COV(1,:,2,:),4));
-p_g = exp(log_ps(p_g));
-p_1 = exp(log_ps(p_1));
-p_2 = exp(log_ps(p_2));
+grid_COV(1,:,4,:) = grid_COV(1,:,1,:)/2 + grid_COV(1,:,2,:)/2;
+
+[COV_g, I_p_g] = max(sum(grid_COV(1,:,3,:),4));
+[COV_1, I_p_1] = max(sum(grid_COV(1,:,1,:),4));
+[COV_2, I_p_2] = max(sum(grid_COV(1,:,2,:),4));
+[COV_s, I_p_s] = max(sum(grid_COV(1,:,4,:),4));
+
+p_g = exp(log_ps(I_p_g));
+p_1 = exp(log_ps(I_p_1));
+p_2 = exp(log_ps(I_p_2));
 
 fprintf('COV_g = %f, p_g = %f; COV_1 = %f, p_1 = %f; COV_2 = %f, p_2 = %f;\n', COV_g, p_g, COV_1, p_1, COV_2, p_2);
 fprintf(fp, 'COV_g = %f, p_g = %f; COV_1 = %f, p_1 = %f; COV_2 = %f, p_2 = %f;\n', COV_g, p_g, COV_1, p_1, COV_2, p_2);
+
+all_covs = zeros(nis,4);
+all_covs(:,1) = grid_COV(1,I_p_1,1,:);
+all_covs(:,2) = grid_COV(1,I_p_2,2,:);
+all_covs(:,3) = grid_COV(1,I_p_g,3,:);
+all_covs(:,4) = grid_COV(1,I_p_s,4,:);
+figure; plot(1:38, all_covs(:,1), 'o-', 1:38, all_covs(:,2), '+-', 1:38, all_covs(:,3), '*-')
+figure; plot(1:38, all_covs(:,1), 'o-', 1:38, all_covs(:,2), '+-', 1:38, all_covs(:,4), '^-')
+
 
 all_aftTree = cell(nis,3);
 for i = 1:nis
@@ -158,3 +171,14 @@ end
 fclose(fp);
 
 save('BSDS_test12.mat');
+
+all_lliks = zeros(38,3);
+all_maps = zeros(38,3);
+for i = 1:3
+for j = 1:38
+all_lliks(j,i) = all_aftTree{j,i}.E(end);
+all_maps(j,i) = all_aftTree{j,i}.M(end);
+end
+end
+figure; plot(1:38, all_lliks(:,1), 'o-', 1:38, all_lliks(:,2), '+-', 1:38, all_lliks(:,3), '*-')
+figure; plot(1:38, all_maps(:,1), 'o-', 1:38, all_maps(:,2), '+-', 1:38, all_maps(:,3), '*-')
