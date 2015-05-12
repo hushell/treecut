@@ -1,4 +1,4 @@
-function [cl, Z, pcorr, acc] = test_lr(net, X, y) 
+function [cl, Z, pcorr, acc] = test_lr(net, X, y, pPosR, pPos) 
 % X: (nsamples,dim)
 % y: (nsamples,1)
 
@@ -6,6 +6,13 @@ pcorr = 0;
 nclass = 2;
 
 Z = glmfwd(net, X);
+if nargin == 5 % prior scaling
+    posScal = pPos / pPosR;
+    negScal = (1-pPos) / (1-pPosR+(pPosR==1));
+    Z(:,1) = Z(:,1) * posScal;
+    Z(:,2) = Z(:,2) * negScal;
+    Z = bsxfun(@rdivide, Z, sum(Z,2));
+end
 [foo, cl] = max(Z');
 
 if nargin < 2

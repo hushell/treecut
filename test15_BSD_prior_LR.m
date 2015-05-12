@@ -18,8 +18,9 @@ all_files = dir(ucm2_dir);
 mat       = arrayfun(@(x) ~isempty(strfind(x.name, '.mat')), all_files);
 all_files = all_files(logical(mat));
 
-for iter = 1:5
+for iter = 1:1
 fprintf('================ iteration %d ===============\n', iter);
+
 fdim = 5;
 X = zeros(300000,fdim);
 Y = zeros(300000,1);
@@ -57,14 +58,15 @@ for i = 1:200%numel(all_files)
     gtTree = thisTree;
     gtTree.llik = all_gtallik{i};
     
+    % features
     dist_to_r = zeros(thisTree.numTotalNodes,1);
     ucm_k_kids = zeros(thisTree.numTotalNodes,fdim); 
     for k = thisTree.numTotalNodes:-1:thisTree.numLeafNodes+1
         kids = thisTree.getKids(k);
         dist_to_r(kids) = dist_to_r(k) + 1;
-        % features
+        % features = [ucm_i sort(ucm(kids(k)) n_leafsUnder(k) dist_to_root(k)]
         ucm_k_kids(k,:) = [
-            thisTree.ucm(k), thisTree.ucm(kids)' ...
+            thisTree.ucm(k), sort(thisTree.ucm(kids)') ...
             numel(thisTree.leafsUnder{k})/thisTree.numLeafNodes ...
             dist_to_r(k) ...
             ];
@@ -77,9 +79,11 @@ for i = 1:200%numel(all_files)
         p = ones(thisTree.numTotalNodes,1);
         tmp = glmfwd(net, ucm_k_kids);
         p(gtTree.numLeafNodes+1:gtTree.numTotalNodes) = tmp(gtTree.numLeafNodes+1:gtTree.numTotalNodes,1);
-        p(p == 0) = p(p == 0) + 0.001;
-        p(p == 1) = p(p == 1) - 0.001;
+        p(p == 0) = p(p == 0) + 1e-5;
+        p(p == 1) = p(p == 1) - 1e-5;
     end
+
+    % inference
     [aftTree,segLabels] = inference_temp(gtTree, p, scal);
     
     %[PRI, VOI, labMap] = eval_seg(segMap, segLabels, groundTruth);
@@ -97,7 +101,7 @@ for i = 1:200%numel(all_files)
     end
     govern(1:aftTree.numLeafNodes) = 3;
     
-%     pos_ind = 1; % model 1: A+ vs. A-
+    %pos_ind = 1; % model 1: A+ vs. A-
     pos_ind = 2; % model 2: A vs. A-
     govern(~govern & aftTree.activeNodes) = pos_ind;
 
@@ -105,7 +109,7 @@ for i = 1:200%numel(all_files)
     y_tree = ones(size(feat_pos,1),1);
     
     feat_neg = ucm_k_kids(govern == 0, :);
-    if i <= 100 && iter == 1
+    if i <= 100 && iter == 1 % use less neg-data for training
         %len = min(sum(govern==0), sum(govern==pos_ind)); 
         %len = floor(sum(govern==0)*0.5);
         %feat_neg = feat_neg(1:len,:);
@@ -115,7 +119,7 @@ for i = 1:200%numel(all_files)
     X(pt:pt+length(y_tree)-1,:) = [feat_pos; feat_neg];
     Y(pt:pt+length(y_tree)-1) = y_tree;
 
-    if i <= 100
+    if i <= 100 % first 100 for training
         TI(pt:pt+length(y_tree)-1) = 1;
     end
     
@@ -134,16 +138,19 @@ Yte = Y(~TI,:);
 Xtr = X(TI,:);
 Ytr = Y(TI,:);
 
+pPosGT = 1/4;
 pPos = sum(Ytr == 1) / length(Ytr);
 pNeg = sum(Ytr == 2) / length(Ytr);
 Alpha = Ytr;
 Alpha(Ytr == 1) = (1/2)/pPos;
 Alpha(Ytr == 2) = (1/2)/pNeg;
 
-net = train_lr(Xtr, Ytr, Alpha);
+%net = train_lr(Xtr, Ytr, Alpha);
+net = train_lr(Xtr, Ytr);
+%[cl, Z, pcorr, acc] = test_lr(net, Xte, Yte, pPos, pPosGT);
 [cl, Z, pcorr, acc] = test_lr(net, Xte, Yte);
 
-%%
+%% testing
 all_metrics = zeros(3,numel(all_files)); % PRI, VOI, COV
 for i = 101:105
     % prepare data
@@ -178,12 +185,16 @@ for i = 101:105
         dist_to_r(kids) = dist_to_r(k) + 1;
         % features
         ucm_k_kids(k,:) = [
-            aftTree.ucm(k), aftTree.ucm(kids)' ...
+            aftTree.ucm(k), sort(aftTree.ucm(kids)') ...
             numel(aftTree.leafsUnder{k})/aftTree.numLeafNodes ...
             dist_to_r(k) ...
             ];
     end
+    
     tmp = glmfwd(net, ucm_k_kids);
+    %posScal = pPosGT / pPos;
+    %tmp(:,1) = tmp(:,1) * posScal;
+
     p(aftTree.numLeafNodes+1:aftTree.numTotalNodes) = tmp(aftTree.numLeafNodes+1:aftTree.numTotalNodes,1);
     p(p == 0) = p(p == 0) + 0.001;
     p(p == 1) = p(p == 1) - 0.001;
