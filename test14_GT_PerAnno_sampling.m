@@ -10,8 +10,9 @@ tree_dir = ['./output/trees/' dataset '/'];
 pt_dir   = ['./output/processed_trees/' dataset '/'];
 smp_dir  = ['./output/samples/' dataset '/'];
 
+subjects = [1103:1117 1119 1121:1124 1126:1130 1132];
 %subjects = [1102:1117 1119 1121:1124 1126:1130 1132];
-subjects = [1105 1123];
+%subjects = [1105 1123];
 
 for s = subjects 
     fprintf('--------------------\n');
@@ -56,13 +57,14 @@ for s = subjects
             bdry = seg2bdry(labMap, 'imageSize');
             ave_img = ave_img + bdry;
 
-            if n <= 2
+            if n <= 5
                 scratch = vis_seg2(labMap, img);
-                imwrite(scratch, [smp_dir name '_sample_' num2str(n) '.png']);
+                imwrite(scratch, [smp_dir name '_subj_' num2str(s) '_sample_' num2str(n) '.png']);
             end
         end % n
         
         ave_img = ave_img / N;
-        imwrite(ave_img*255, [smp_dir name '_sample_ave_bry.png']);
+        ave_img = uint8(mat2gray(ave_img) * 255);
+        imwrite(ave_img, [smp_dir name '_subj_' num2str(s) '_sample_ave_bry.png']);
     end % j
 end % s
