@@ -73,7 +73,7 @@ el = strel('diamond',1);
 
 for i = 1:nis
     if sum(iids_sel(:,i)) == 0 || sum(iids_sel(:,i)) == n_sub 
-        continue
+        continue % not in intersection
     end
 
     iid = iids_train(i);
@@ -98,8 +98,8 @@ for i = 1:nis
 
     for s = 1:n_sub
         %load(['data/gt_' num2str(sub_sel(s)) '.mat']);
-        gt_msk = ismember(subjects, sub_sel(s));
-        if sum(gt_msk) == 0
+        gt_msk = ismember(subjects, sub_sel(s)); 
+        if sum(gt_msk) == 0 % i doesn't have subj s
             continue
         end
         assert(length(gt_msk) == length(all_gtlliks{i}));
@@ -156,6 +156,102 @@ for i = 1:nis
     end % s
 end % i
 
+% select ODS
+COV_subs = zeros(2,n_sub);
+p_subs = zeros(2,n_sub);
+best_j = zeros(2,n_sub);
+for s = 1:n_sub
+    [COV_g, j_g] = max(sum(grid_COV(1,:,s,:),4));
+    p_g = exp(log_ps(j_g));
+    COV_subs(1,s) = COV_g;
+    best_j(1,s) = j_g;
+    p_subs(1,s) = p_g;
+    fprintf('TC, sub %d: COV_g = %f, p_g = %f; \n', sub_sel(s), COV_g, p_g);
+
+    [COV_g, j_g] = max(sum(grid_COV(2,:,s,:),4));
+    p_g = g_thres(j_g);
+    COV_subs(2,s) = COV_g;
+    best_j(2,s) = j_g;
+    p_subs(2,s) = p_g;
+    fprintf('UCM, sub %d: COV_g = %f, p_g = %f; \n', sub_sel(s), COV_g, p_g);
+end
+
+% test
+test_COV = zeros(n_r,n_sub,n_sub,nis);
+for i = 1:nis
+    if sum(iids_sel(:,i)) ~= n_sub 
+        continue
+    end
+
+    iid = iids_train(i);
+    name = num2str(iid);
+    load([tree_dir name '_tree.mat']); % tree thres_arr
+    load([ucm2_dir name '.mat']); % ucm2
+    load([gt_dir name '.mat']); % gt
+    img = imread([img_dir name '.jpg']); % img
+    ucm = ucm2(3:2:end, 3:2:end); % ucm
+    segMap = bwlabel(ucm <= 0, 4); % seg
+
+    % preprocess tree
+    thisTreePath = [pt_dir name '_tree.mat'];
+    thisTree = tree_preprocess(thisTreePath, thisTree, img, segMap);
+    
+    subjects = g_subjects(logical(iids_ind(:,i)'));
+
+    if isempty(all_gtlliks{i})
+        [gtTree, gt_lliks] = best_gt_trees(segMap, groundTruth, thisTree);
+        all_gtlliks{i} = gt_lliks;
+    end
+
+    for s = 1:n_sub
+        gt_msk = ismember(subjects, sub_sel(s));
+        assert(sum(gt_msk) == 1);
+        assert(length(gt_msk) == length(all_gtlliks{i}));
+        
+        gt_sub = cell(1,1);
+        gt_sub{1}.Segmentation = double(groundTruth{gt_msk}.Segmentation);
+
+        gtTree.llik = all_gtlliks{i}{gt_msk};
+
+        for r = 1:n_sub
+            % TC
+            [aftTree,segLabels] = inference_temp(gtTree, p_subs(1,r), scal);
+            [PRI, VOI, labMap] = eval_seg(segMap, segLabels, gt_sub);
+            [cntR, sumR] = covering_rate_ois(labMap, gt_sub);
+            COV = cntR ./ (sumR + (sumR==0));
+            test_COV(1,r,s,i) = COV;
+
+            % UCM
+            labMap = bwlabel(ucm <= p_subs(2,r), 4);
+            for m = 1:2
+               tmp = imdilate(labMap,el);
+               labMap(labMap == 0) = tmp(labMap == 0);
+            end
+            [PRI, VOI] = match_segmentations2(labMap, gt_sub);
+            [cntR, sumR] = covering_rate_ois(labMap, gt_sub);
+            COV = cntR ./ (sumR + (sumR==0));
+            test_COV(2,r,s,i) = COV;
+        end % r
+    end % s
+end % i
+
+test_COV = test_COV(:,:,:,iids_inter);
+squeeze(mean(test_COV(1,:,:,:),4))
+squeeze(mean(test_COV(2,:,:,:),4))
+
+% paired t-test
+H = zeros(n_sub);
+p_value = zeros(n_sub);
+for s = 1:n_sub
+    for r = 1:n_sub
+        [H(r,s), p_value(r,s)] = ttest2(test_COV(1,r,s,:), test_COV(2,r,s,:));
+    end
+end
+H
+p_value
+
+% save
 if ~exist('all_gtlliks_train.mat', 'file')
     save('all_gtlliks_train.mat', 'all_gtlliks');
 end
+
