@@ -94,10 +94,11 @@ for i = 1:nis
     if isempty(all_gtlliks{i})
         [gtTree, gt_lliks] = best_gt_trees(segMap, groundTruth, thisTree);
         all_gtlliks{i} = gt_lliks;
+    else
+        gtTree = thisTree;
     end
 
     for s = 1:n_sub
-        %load(['data/gt_' num2str(sub_sel(s)) '.mat']);
         gt_msk = ismember(subjects, sub_sel(s)); 
         if sum(gt_msk) == 0 % i doesn't have subj s
             continue
@@ -201,6 +202,8 @@ for i = 1:nis
     if isempty(all_gtlliks{i})
         [gtTree, gt_lliks] = best_gt_trees(segMap, groundTruth, thisTree);
         all_gtlliks{i} = gt_lliks;
+    else
+        gtTree = thisTree;
     end
 
     for s = 1:n_sub
