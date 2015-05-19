@@ -129,7 +129,7 @@ for i = 1:nis
             grid_COV(1,j,s,i) = COV;
         end % j
 
-        fprintf('img %d: best_COV_TC = %f\n', i, max(grid_COV(1,:,s,i)));
+        fprintf('img %d, sub %d: best_COV_TC = %f\n', i, sub_sel(s), max(grid_COV(1,:,s,i)));
             
         % UCM
         for j = 1:n_th
@@ -153,7 +153,7 @@ for i = 1:nis
             grid_COV(2,j,s,i) = COV;
         end % j
 
-        fprintf('img %d: best_COV_UCM = %f\n', i, max(grid_COV(2,:,s,i)));
+        fprintf('img %d, sub %d: best_COV_UCM = %f\n', i, sub_sel(s), max(grid_COV(2,:,s,i)));
     end % s
 end % i
 
