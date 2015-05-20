@@ -52,8 +52,8 @@ for i = 1:nis
     img = imread([img_dir name '.jpg']); % img
     ucm = ucm2(3:2:end, 3:2:end); % ucm
     segMap = bwlabel(ucm <= 0, 4); % seg
-    for s = 1:nsegs
-        groundTruth{s}.Segmentation = double(all_segs{i}{s}); % gt
+    for j = 1:nsegs
+        groundTruth{j}.Segmentation = double(all_segs{i}{j}); % gt
     end
     
     % preprocess tree
@@ -104,8 +104,8 @@ for i = 1:nis
     img = imread([img_dir name '.jpg']); % img
     ucm = ucm2(3:2:end, 3:2:end); % ucm
     segMap = bwlabel(ucm <= 0, 4); % seg
-    for s = 1:nsegs
-        groundTruth{s}.Segmentation = double(all_segs{i}{s}); % gt
+    for j = 1:nsegs
+        groundTruth{j}.Segmentation = double(all_segs{i}{j}); % gt
     end
     
     % preprocess tree
