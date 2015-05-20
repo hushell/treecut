@@ -41,7 +41,7 @@ for si = 1:n_sub
         end
 
         fprintf('Image %d\n', j);
-        iid = iids_train(i);
+        iid = iids_train(j);
         name = num2str(iid);
         load([tree_dir name '_tree.mat']); % tree thres_arr
         load([ucm2_dir name '.mat']); % ucm2
