@@ -27,7 +27,7 @@ subs = ismember(g_subjects, sub_sel)';
 iids_sel = iids_ind(subs,:); % 
 iids_inter = sum(iids_sel,1) == n_sub; %
 
-N = 10; % n samples
+N = 50; % n samples
 for si = 1:n_sub
     fprintf('--------------------\n');
     fprintf('Subject %d\n', sub_sel(si));
