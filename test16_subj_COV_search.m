@@ -85,18 +85,19 @@ for i = 1:nis
 
     % features= [ucm_pa(i) ucm_i sort(ucm(kids(k)) n_leafsUnder(k) dist_to_root(k)]
     if isempty(all_feats{i})
-        fdim = 4+1;
+        fdim = 6+1;
         feats_i = zeros(thisTree.numTotalNodes,fdim); 
-        %dist_to_r = zeros(thisTree.numTotalNodes,1);
+        dist_to_r = zeros(thisTree.numTotalNodes,1);
         for k = thisTree.numTotalNodes:-1:thisTree.numLeafNodes+1
             kids = thisTree.getKids(k);
             par = thisTree.getParent(k);
             if par == 0; ucm_par = 1; else ucm_par = thisTree.ucm(par); end
-            %dist_to_r(kids) = dist_to_r(k) + 1;
+            dist_to_r(kids) = dist_to_r(k) + 1;
             feats_i(k,:) = [...
-                ucm_par,thisTree.ucm(k),sort(thisTree.ucm(kids))',1,...
-                %numel(thisTree.leafsUnder{k})/thisTree.numLeafNodes ...
-                %dist_to_r(k) ...
+                ucm_par,thisTree.ucm(k),sort(thisTree.ucm(kids))',...
+                numel(thisTree.leafsUnder{k})/thisTree.numLeafNodes, ...
+                dist_to_r(k), ...
+                1
             ];
         end
         all_feats{i} = feats_i;
@@ -115,13 +116,14 @@ end
 % fminsearch for w in terms of COV
 fprintf('\n===== fminsearch init =====\n');
 p_g = 0.1;
-w0 = [0 0 0 0 log(p_g/(1-p_g))]';
+fdim = 7;
+w0 = rand(fdim,1); w0(end) = log(w0(end)/(1-w0(end)));
 %w0 = glob_search(@eval_cov_rate, w0);
 fprintf('===== fminsearch =====\n');
-%opts = optimset('Display','iter');
-%[wopt, fval] = fminsearch(@eval_cov_rate, w0, opts);
-opts = optimset('Display','iter', 'LargeScale', 'off');
-[wopt, fval] = fminunc(@eval_cov_rate, w0, opts);
+opts = optimset('Display','iter');
+[wopt, fval] = fminsearch(@eval_cov_rate, w0, opts);
+%opts = optimset('Display','iter', 'LargeScale', 'off');
+%[wopt, fval] = fminunc(@eval_cov_rate, w0, opts);
 wopt
 fval
 
