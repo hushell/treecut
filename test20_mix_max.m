@@ -1,5 +1,6 @@
 clear
 close all
+iids_train = load(fullfile('data/iids_train.txt')); %
 
 fp = fopen('log_test20.txt', 'w');
 
@@ -13,6 +14,7 @@ pt_dir   = ['./output/processed_trees/' dataset '/'];
 
 n_r = 3; % TC-GT TC UCM 
 n_sub = 2;
+nis = 200;
 
 % TC
 scal = 1e-3;
@@ -40,7 +42,8 @@ el = strel('diamond',1);
 
 for i = 1:nis
     tic;
-    iid = iids_train(i);
+    ii = i+0; %*****
+    iid = iids_train(ii); 
     name = num2str(iid);
     load([tree_dir name '_tree.mat']); % tree thres_arr
     load([ucm2_dir name '.mat']); % ucm2
@@ -58,9 +61,9 @@ for i = 1:nis
     [~,ind_lab_cnt] = sort(gt_lab_cnt);
     ind_min_max = [ind_lab_cnt(1) ind_lab_cnt(end)];
 
-    if isempty(all_gtlliks{i})
+    if isempty(all_gtlliks{ii})
         [gtTree, gt_lliks] = best_gt_trees(segMap, groundTruth, thisTree);
-        all_gtlliks{i} = gt_lliks;
+        all_gtlliks{ii} = gt_lliks;
     else
         gtTree = thisTree;
     end
@@ -70,7 +73,7 @@ for i = 1:nis
         gt_sub{1}.Segmentation = double(groundTruth{ind_min_max(s)}.Segmentation);
 
         % TC-GT
-        gtTree.llik = all_gtlliks{i}{ind_min_max(s)};
+        gtTree.llik = all_gtlliks{ii}{ind_min_max(s)};
         
         for j = 1:n_s
             p = exp(log_ps(j));
@@ -89,8 +92,8 @@ for i = 1:nis
             grid_COV(1,j,s,i) = COV;
         end % j
 
-        fprintf('TC-GT: (img %d, sub %d): best_COV = %f\n', i, s, max(grid_COV(1,:,s,i)));
-        fprintf(fp, 'TC-GT: (img %d, sub %d): best_COV = %f\n', i, s, max(grid_COV(1,:,s,i)));
+        fprintf('TC-GT: (img %d, sub %d): best_COV = %f\n', ii, s, max(grid_COV(1,:,s,i)));
+        fprintf(fp, 'TC-GT: (img %d, sub %d): best_COV = %f\n', ii, s, max(grid_COV(1,:,s,i)));
             
         % TC
         for j = 1:n_s
@@ -110,8 +113,8 @@ for i = 1:nis
             grid_COV(2,j,s,i) = COV;
         end % j
 
-        fprintf('TC: (img %d, sub %d): best_COV = %f\n', i, s, max(grid_COV(2,:,s,i)));
-        fprintf(fp, 'TC: (img %d, sub %d): best_COV = %f\n', i, s, max(grid_COV(2,:,s,i)));
+        fprintf('TC: (img %d, sub %d): best_COV = %f\n', ii, s, max(grid_COV(2,:,s,i)));
+        fprintf(fp, 'TC: (img %d, sub %d): best_COV = %f\n', ii, s, max(grid_COV(2,:,s,i)));
 
         % UCM
         for j = 1:n_th
@@ -135,11 +138,11 @@ for i = 1:nis
             grid_COV(3,j,s,i) = COV;
         end % j
 
-        fprintf('UCM: (img %d, sub %d): best_COV = %f\n', i, s, max(grid_COV(3,:,s,i)));
-        fprintf(fp, 'UCM: (img %d, sub %d): best_COV = %f\n', i, s, max(grid_COV(3,:,s,i)));
+        fprintf('UCM: (img %d, sub %d): best_COV = %f\n', ii, s, max(grid_COV(3,:,s,i)));
+        fprintf(fp, 'UCM: (img %d, sub %d): best_COV = %f\n', ii, s, max(grid_COV(3,:,s,i)));
     end % s
 
-    fprintf('img %d takes %f sec.\n', i, toc);
+    fprintf('img %d takes %f sec.\n', iid, toc);
 end % i
 
 % select ODS
@@ -149,27 +152,27 @@ best_j = zeros(n_r,n_sub);
 for s = 1:n_sub
     [COV_g, j_g] = max(sum(grid_COV(1,:,s,:),4));
     p_g = exp(log_ps(j_g));
-    COV_subs(1,s) = COV_g;
+    COV_subs(1,s) = COV_g / nis;
     best_j(1,s) = j_g;
     p_subs(1,s) = p_g;
-    fprintf('TC-GT, sub %d: COV_g = %f, p_g = %f; \n', sub_sel(s), COV_g, p_g);
-    fprintf(fp, 'TC-GT, sub %d: COV_g = %f, p_g = %f; \n', sub_sel(s), COV_g, p_g);
+    fprintf('TC-GT, sub %d: COV_g = %f, p_g = %f; \n', s, COV_subs(1,s), p_g);
+    fprintf(fp,'TC-GT, sub %d: COV_g = %f, p_g = %f; \n', s, COV_subs(1,s), p_g);
 
     [COV_g, j_g] = max(sum(grid_COV(2,:,s,:),4));
     p_g = g_thres(j_g);
-    COV_subs(2,s) = COV_g;
+    COV_subs(2,s) = COV_g / nis;
     best_j(2,s) = j_g;
     p_subs(2,s) = p_g;
-    fprintf('TC, sub %d: COV_g = %f, p_g = %f; \n', sub_sel(s), COV_g, p_g);
-    fprintf(fp, 'TC, sub %d: COV_g = %f, p_g = %f; \n', sub_sel(s), COV_g, p_g);
+    fprintf('TC, sub %d: COV_g = %f, p_g = %f; \n', s, COV_subs(2,s), p_g);
+    fprintf(fp,'TC, sub %d: COV_g = %f, p_g = %f; \n', s, COV_subs(2,s), p_g);
 
     [COV_g, j_g] = max(sum(grid_COV(3,:,s,:),4));
     p_g = g_thres(j_g);
-    COV_subs(3,s) = COV_g;
+    COV_subs(3,s) = COV_g / nis;
     best_j(3,s) = j_g;
     p_subs(3,s) = p_g;
-    fprintf('UCM, sub %d: COV_g = %f, p_g = %f; \n', sub_sel(s), COV_g, p_g);
-    fprintf(fp, 'UCM, sub %d: COV_g = %f, p_g = %f; \n', sub_sel(s), COV_g, p_g);
+    fprintf('UCM, sub %d: COV_g = %f, p_g = %f; \n', s, COV_subs(3,s), p_g);
+    fprintf(fp,'UCM, sub %d: COV_g = %f, p_g = %f; \n', s, COV_subs(3,s), p_g);
 end
 
 % test
@@ -186,6 +189,7 @@ end % i
 
 squeeze(mean(test_COV(1,:,:,:),4))
 squeeze(mean(test_COV(2,:,:,:),4))
+squeeze(mean(test_COV(3,:,:,:),4))
 
 % paired t-test
 H = zeros(n_sub);
