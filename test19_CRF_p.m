@@ -70,6 +70,9 @@ for i = 1:nis
     % gt by subj
     subjects = g_subjects(logical(iids_ind(:,i)'));
     gt_msk = ismember(subjects, subj_id); 
+    if sum(gt_msk) == 0
+        continue
+    end
     assert(length(gt_msk) == length(all_gtlliks{i}));
     gt_sub = cell(1,1);
     gt_sub{1}.Segmentation = double(groundTruth{gt_msk}.Segmentation);

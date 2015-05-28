@@ -121,7 +121,7 @@ w0 = rand(fdim,1); w0(end) = log(w0(end)/(1-w0(end)));
 %w0 = glob_search(@eval_cov_rate, w0);
 fprintf('===== fminsearch =====\n');
 opts = optimset('Display','iter');
-[wopt, fval] = fminsearch(@eval_cov_rate, w0, opts);
+[wopt, fval] = myfminsearch(@eval_cov_rate, w0, opts);
 %opts = optimset('Display','iter', 'LargeScale', 'off');
 %[wopt, fval] = fminunc(@eval_cov_rate, w0, opts);
 wopt
