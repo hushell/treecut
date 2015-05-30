@@ -26,10 +26,10 @@ for ds in datasets:
             + "#$ -cwd" + "\n" \
             + "#" + "\n" \
             + "# name this job" + "\n" \
-            + "#$ -N %s_%d2%d" % (name_data,img_s,img_t) + "\n" \
+            + "#$ -N %s_%d_%d" % (name_data,img_s,img_t) + "\n" \
             + "#" + "\n" \
             + "# send stdout and stderror to this file" + "\n" \
-            + "#$ -o log/%s_%d2%d.out" % (name_data,img_s,img_t) + "\n" \
+            + "#$ -o log/%s_%d_%d.out" % (name_data,img_s,img_t) + "\n" \
             + "#$ -j y" + "\n\n" \
             + "#see where the job is being run" + "\n" \
             + "hostname" + "\n\n" \
@@ -41,14 +41,14 @@ for ds in datasets:
             + "# print date and time again" + "\n" \
             + "date" + "\n"
 
-        bash_file = open("sge_%s_%d2%d.sh" % (name_data,img_s,img_t), "w")
+        bash_file = open("sge_%s_%d_%d.sh" % (name_data,img_s,img_t), "w")
         bash_file.write(script)
         bash_file.close()
 
-        os.system("chmod +x " + "sge_%s_%d2%d.sh" % (name_data,img_s,img_t))
-        #os.system("sh " + "sge_%s_%d2%d.sh" % (name_data,img_s,img_t))
-        os.system("qsub " + "sge_%s_%d2%d.sh" % (name_data,img_s,img_t))
+        os.system("chmod +x " + "sge_%s_%d_%d.sh" % (name_data,img_s,img_t))
+        #os.system("sh " + "sge_%s_%d_%d.sh" % (name_data,img_s,img_t))
+        os.system("qsub " + "sge_%s_%d_%d.sh" % (name_data,img_s,img_t))
         time.sleep(1.13)
         if bash_del == True:
-            os.system("rm -f " + "sge_%s_%d2%d.sh" % (name_data,img_s,img_t))
+            os.system("rm -f " + "sge_%s_%d_%d.sh" % (name_data,img_s,img_t))
 
