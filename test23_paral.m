@@ -29,7 +29,6 @@ el = strel('diamond',1);
 %end
 
 for i = img_range
-    fprintf('===== img %d =====\n', i);
     tic;
     n_alg = 2;
 
@@ -69,6 +68,8 @@ for i = img_range
     grid_VOI  = zeros(n_r,n_s,n_sub,n_alg);
     grid_nLab = zeros(n_r,n_s,n_sub,n_alg);
     grid_COV  = zeros(n_r,n_s,n_sub,n_alg);
+
+    fprintf('===== img %d_%d with %d subj =====\n', i, iid, n_sub);
 
     for s = 1:n_sub
         gt_sub = cell(1,1);
@@ -119,7 +120,7 @@ for i = img_range
         fprintf('UCM: (img %d, sub %d): best_COV = %f\n', i, s, max(max(grid_COV(:,:,s,1))));
     end % s
     
-    parsave([eval_dir 'grid_img' i '_' name '_nsub_' n_sub '.mat'],grid_PRI,grid_VOI,grid_nLab,grid_COV);
+    parsave([eval_dir 'grid_img_' num2str(i) '_' name '.mat'],grid_PRI,grid_VOI,grid_nLab,grid_COV);
     fprintf('img %d takes %f sec.\n', iid, toc);
 end % i
 %matlabpool close

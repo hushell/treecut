@@ -8,8 +8,8 @@ name = "tcucm_"
 bash_del = False
 
 datasets = ["train","test"]
-grps = [range(x,x+10) for x in range(1,200,10)]
-strid = 10
+#grps = [range(x,x+10) for x in range(1,200,10)]
+strid = 4
 
 for ds in datasets:
     name_data = ds[:2]
