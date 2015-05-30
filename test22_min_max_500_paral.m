@@ -31,6 +31,7 @@ if matlabpool('size') == 0 % checking to see if my pool is already open
 end
 
 parfor i = 1:nis
+    fprintf('===== %d started =====\n', i);
     n_sub = 2;
     n_alg = 2;
 
@@ -119,9 +120,9 @@ parfor i = 1:nis
         fprintf('UCM: (img %d, sub %d): best_COV = %f\n', i, s, max(max(grid_COV(:,:,s,1))));
     end % s
     
-    parsave([eval_dir 'grid_img_' name '.mat'],'grid_PRI','grid_VOI','grid_nLab','grid_COV');
+    parsave([eval_dir 'grid_minmax_img_' name '.mat'],grid_PRI,grid_VOI,grid_nLab,grid_COV);
 end % i
-matlabpool close
+%matlabpool close
 
 %save(['BSDS_test22_' dataset '.mat']); % **** IMPORTANT
 
