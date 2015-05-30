@@ -17,10 +17,11 @@ nis = 50;
 
 % TC
 %scals = [1e-2 1e-3 5e-4 1e-4 1e-5];
-scals = [9e-4 8e-4 7e-4 6e-4];
+%scals = [9e-4 8e-4 7e-4 6e-4];
+scals = [2e-4 3e-4 4e-4];
 n_r = length(scals);
 %ps = linspace(0.9,0.9999,10);
-ps = [exp(linspace(log(0.85), log(0.89), 10)) exp(linspace(log(0.9), log(0.9999), 30))];
+ps = [exp(linspace(log(0.80), log(0.89), 30)) exp(linspace(log(0.9), log(0.9999), 30))];
 n_s = length(ps);
 
 grid_PRI = zeros(n_r,n_s,n_sub,nis,2);
