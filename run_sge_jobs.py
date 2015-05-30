@@ -15,7 +15,7 @@ for ds in datasets:
     name_data = ds[:2]
     for j in xrange(1, 200, strid):
         img_s = j
-        img_t = j+strid
+        img_t = j+strid-1
         print "------------ training machine (%d,%d) -------------" % (img_s,img_t)
 
         script = \
