@@ -2,7 +2,7 @@ function segTree = tree_preprocess(processed, segTree, img, segMap)
 
 if exist(processed, 'file')
     %fprintf('*** %s exists!\n', processed);
-    fprintf('>');
+    %fprintf('>');
     load(processed);
     return
 end
