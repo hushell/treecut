@@ -119,7 +119,7 @@ for i = img_range
         fprintf('UCM: (img %d, sub %d): best_COV = %f\n', i, s, max(max(grid_COV(:,:,s,1))));
     end % s
     
-    parsave([eval_dir 'grid_img' i '_' name '_nsub_' n_sub '.mat'],'grid_PRI','grid_VOI','grid_nLab','grid_COV');
+    parsave([eval_dir 'grid_img' i '_' name '_nsub_' n_sub '.mat'],grid_PRI,grid_VOI,grid_nLab,grid_COV);
     fprintf('img %d takes %f sec.\n', iid, toc);
 end % i
 %matlabpool close
