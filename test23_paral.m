@@ -4,7 +4,7 @@ if nargin < 3
     img_range = [1 2];
 end
 
-img_range = [str2num(img_s) str2num(img_t)];
+img_range = [str2num(img_s):str2num(img_t)];
 
 fprintf('===== %s set =====\n', dataset);
 fprintf('===== %d to %d=====\n', img_range(1), img_range(end));
@@ -30,6 +30,7 @@ el = strel('diamond',1);
 
 for i = img_range
     fprintf('===== img %d =====\n', i);
+    tic;
     n_alg = 2;
 
     % TC
@@ -43,7 +44,7 @@ for i = img_range
     
     % data
     [~,name] = fileparts(all_files(i).name);
-    %iid = str2double(name);
+    iid = str2double(name);
     temp = load([tree_dir name '_tree.mat']); % tree thres_arr
     thisTree = temp.thisTree;
     temp = load([ucm2_dir name '.mat']); % ucm2
@@ -64,10 +65,10 @@ for i = img_range
     %ind_min_max = [ind_lab_cnt(1) ind_lab_cnt(end)];
     n_sub = length(groundTruth);
     
-    grid_PRI = zeros(n_r,n_s,n_sub,n_alg);
-    grid_VOI = zeros(n_r,n_s,n_sub,n_alg);
+    grid_PRI  = zeros(n_r,n_s,n_sub,n_alg);
+    grid_VOI  = zeros(n_r,n_s,n_sub,n_alg);
     grid_nLab = zeros(n_r,n_s,n_sub,n_alg);
-    grid_COV = zeros(n_r,n_s,n_sub,n_alg);
+    grid_COV  = zeros(n_r,n_s,n_sub,n_alg);
 
     for s = 1:n_sub
         gt_sub = cell(1,1);
@@ -101,8 +102,8 @@ for i = img_range
             labMap = bwlabel(ucm <= k, 4);
             
             for m = 1:2
-               tmp = imdilate(labMap,el);
-               labMap(labMap == 0) = tmp(labMap == 0);
+                tmp = imdilate(labMap,el);
+                labMap(labMap == 0) = tmp(labMap == 0);
             end
             
             [PRI, VOI] = match_segmentations2(labMap, gt_sub);
@@ -118,11 +119,13 @@ for i = img_range
         fprintf('UCM: (img %d, sub %d): best_COV = %f\n', i, s, max(max(grid_COV(:,:,s,1))));
     end % s
     
-    parsave([eval_dir 'grid_img_' name '.mat'],'grid_PRI','grid_VOI','grid_nLab','grid_COV');
+    parsave([eval_dir 'grid_img' i '_' name '_nsub_' n_sub '.mat'],'grid_PRI','grid_VOI','grid_nLab','grid_COV');
+    fprintf('img %d takes %f sec.\n', iid, toc);
 end % i
 %matlabpool close
 
 %save(['BSDS_test22_' dataset '.mat']); % **** IMPORTANT
+exit
 
 % function parsave(fname,grid_PRI,grid_VOI,grid_nLab,grid_COV)
 % save(fname,'grid_PRI','grid_VOI','grid_nLab','grid_COV');
