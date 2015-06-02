@@ -1,7 +1,13 @@
-function eval_BSDS500_ave(metric)
+function eval_BSDS500_ave(metric, eval_path)
 % BSDS500 - ave
 
+if nargin < 2
+    eval_path  = './output/grid_eval/'; 
+end
+
 grid_metric = ['grid_' metric];
+strid = 4;
+%nalg = 2;
 
 % TC
 scals = [1e-3 9e-4 8e-4 7e-4 6e-4 5e-4 4e-4 3e-4 2e-4 1e-4];
@@ -21,21 +27,16 @@ fprintf('train+val on train+val ave_subj (ODS, OIS):\n');
 % ave ==> OIS: Alg 2: COV_g = 0.670814
 
 dataset = 'train';
-
-img_dir  = ['./data/images/' dataset '/'];
-ucm2_dir = ['./data/ucm2/' dataset '/'];
-gt_dir   = ['./data/groundTruth/' dataset '/'];
-tree_dir = ['./output/trees/' dataset '/'];
-pt_dir   = ['./output/processed_trees/' dataset '/'];
-eval_dir  = ['./output/grid_eval/' dataset '/'];
-
-all_files = dir(ucm2_dir);
-mat       = arrayfun(@(x) ~isempty(strfind(x.name, '.mat')), all_files);
-all_files = all_files(logical(mat));
-
+load(['data/BSDS_' dataset '_all_files.mat'], 'all_files');
+eval_dir  = [eval_path '/' dataset '/'];
 nis = length(all_files);
-strid = 4;
-nalg = 2;
+
+% get nalg
+[~,name] = fileparts(all_files(1).name);
+fil_nam = [eval_dir 'grid_img_' num2str(1) '_' name '.mat'];
+temp = load(fil_nam, grid_metric);
+grid_res = getfield(temp, grid_metric);
+[~,~,~,nalg] = size(grid_res);
 
 grid_COV_train_ave = zeros(nis+100,nr,ns,nalg); % nscal, nps, nalg
 COV_OIS_train_all = zeros(nis+100,nalg);
@@ -54,7 +55,7 @@ for i = 1:strid:nis
         
         % OIS
         %fprintf('==> img %d:\n', j);
-        for a = 1:2
+        for a = 1:nalg
             temp = squeeze(grid_COV_train_ave(j,:,:,a));
             [COV_OIS_train_all(j,a),I] = opt(temp(:),metric);
             [ri,ji] = ind2sub(size(temp),I);
@@ -65,17 +66,8 @@ for i = 1:strid:nis
 end
 
 dataset = 'val';
-
-img_dir  = ['./data/images/' dataset '/'];
-ucm2_dir = ['./data/ucm2/' dataset '/'];
-gt_dir   = ['./data/groundTruth/' dataset '/'];
-tree_dir = ['./output/trees/' dataset '/'];
-pt_dir   = ['./output/processed_trees/' dataset '/'];
-eval_dir  = ['./output/grid_eval/' dataset '/'];
-
-all_files = dir(ucm2_dir);
-mat       = arrayfun(@(x) ~isempty(strfind(x.name, '.mat')), all_files);
-all_files = all_files(logical(mat));
+load(['data/BSDS_' dataset '_all_files.mat'], 'all_files');
+eval_dir  = [eval_path '/' dataset '/'];
 
 nis2 = length(all_files);
 
@@ -96,7 +88,7 @@ for i = 1:strid:nis2
         
         % OIS
         %fprintf('==> img %d:\n', j);
-        for a = 1:2
+        for a = 1:nalg
             temp = squeeze(grid_COV_train_ave(jj,:,:,a));
             [COV_OIS_train_all(jj,a),I] = max(temp(:));
             [ri,ji] = ind2sub(size(temp),I);
@@ -111,14 +103,14 @@ j_ODS_train_ave = zeros(nalg,1); % p or k
 r_ODS_train_ave = zeros(nalg,1); % scal
 COV_OIS_train_ave = zeros(nalg,1);
 
-for i = 1:2
+for i = 1:nalg
     temp = squeeze(sum(grid_COV_train_ave(:,:,:,i),1))./(nis+nis2);
     [COV_ODS_train_ave(i),I] = opt(temp(:),metric);
     [r_ODS_train_ave(i),j_ODS_train_ave(i)] = ind2sub(size(temp),I);
-    fprintf('ave ==> ODS: Alg %d: COV_g = %f, p_g = %f, scal_g = %f; \n', ...
-        i, COV_ODS_train_ave(i), ps(j_ODS_train_ave(i)), scals(r_ODS_train_ave(i)));
+    fprintf('ave ==> ODS: Alg %d: %s_g = %f, p_g = %f, scal_g = %f; \n', ...
+        i, metric, COV_ODS_train_ave(i), ps(j_ODS_train_ave(i)), scals(r_ODS_train_ave(i)));
     COV_OIS_train_ave(i) = mean(COV_OIS_train_all(:,i));
-    fprintf('ave ==> OIS: Alg %d: COV_g = %f\n', i, COV_OIS_train_ave(i));
+    fprintf('ave ==> OIS: Alg %d: %s_g = %f\n', i, metric, COV_OIS_train_ave(i));
 end
 
 
@@ -129,17 +121,8 @@ fprintf('test on test ave_subj (ODS, OIS):\n');
 % ave ==> ODS: Alg 2: COV_g = 0.594165, p_g = 0.985488, scal_g = 0.000700; 
 % ave ==> OIS: Alg 2: COV_g = 0.650406
 dataset = 'test';
-
-img_dir  = ['./data/images/' dataset '/'];
-ucm2_dir = ['./data/ucm2/' dataset '/'];
-gt_dir   = ['./data/groundTruth/' dataset '/'];
-tree_dir = ['./output/trees/' dataset '/'];
-pt_dir   = ['./output/processed_trees/' dataset '/'];
-eval_dir  = ['./output/grid_eval/' dataset '/'];
-
-all_files = dir(ucm2_dir);
-mat       = arrayfun(@(x) ~isempty(strfind(x.name, '.mat')), all_files);
-all_files = all_files(logical(mat));
+load(['data/BSDS_' dataset '_all_files.mat'], 'all_files');
+eval_dir  = [eval_path '/' dataset '/'];
 
 nis = length(all_files);
 
@@ -160,7 +143,7 @@ for i = 1:strid:nis
         
         % OIS
         %fprintf('==> img %d:\n', j);
-        for a = 1:2
+        for a = 1:nalg
             temp = squeeze(grid_COV_val_ave(j,:,:,a));
             [COV_OIS_val_all(j,a),I] = opt(temp(:),metric);
             [ri,ji] = ind2sub(size(temp),I);
@@ -175,14 +158,14 @@ j_ODS_val_ave = zeros(nalg,1); % p or k
 r_ODS_val_ave = zeros(nalg,1); % scal
 COV_OIS_val_ave = zeros(nalg,1);
 
-for i = 1:2
+for i = 1:nalg
     temp = squeeze(sum(grid_COV_val_ave(:,:,:,i),1))./nis;
     [COV_ODS_val_ave(i),I] = opt(temp(:),metric);
     [r_ODS_val_ave(i),j_ODS_val_ave(i)] = ind2sub(size(temp),I);
-    fprintf('ave ==> ODS: Alg %d: COV_g = %f, p_g = %f, scal_g = %f; \n', ...
-        i, COV_ODS_val_ave(i), ps(j_ODS_val_ave(i)), scals(r_ODS_val_ave(i)));
+    fprintf('ave ==> ODS: Alg %d: %s_g = %f, p_g = %f, scal_g = %f; \n', ...
+        i, metric, COV_ODS_val_ave(i), ps(j_ODS_val_ave(i)), scals(r_ODS_val_ave(i)));
     COV_OIS_val_ave(i) = mean(COV_OIS_val_all(:,i));
-    fprintf('ave ==> OIS: Alg %d: COV_g = %f\n', i, COV_OIS_val_ave(i));
+    fprintf('ave ==> OIS: Alg %d: %s_g = %f\n', i, metric, COV_OIS_val_ave(i));
 end
 
 
@@ -190,10 +173,10 @@ end
 fprintf('train+val on test ave_subj (ODS):\n');
 % ave ==> ODS: Alg 1: COV_g = 0.587303; 
 % ave ==> ODS: Alg 2: COV_g = 0.592394; 
-for i = 1:2
+for i = 1:nalg
     COV = mean(grid_COV_val_ave(:,r_ODS_train_ave(i),j_ODS_train_ave(i),i)); 
-    fprintf('ave ==> ODS: Alg %d: COV_g = %f; \n', ...
-        i, COV);
+    fprintf('ave ==> ODS: Alg %d: %s_g = %f; \n', ...
+        i, metric, COV);
 end
 
 

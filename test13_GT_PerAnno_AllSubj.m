@@ -18,7 +18,7 @@ fprintf('Subject %d\n', s);
 fprintf(fp, '--------------------\n');
 fprintf(fp, 'Subject %d\n', s);
 
-generate_subject_data(s);
+generate_subject_data(dataset, s);
 load(['data/gt_' num2str(s) '.mat']);
 
 nis = numel(all_iids);
