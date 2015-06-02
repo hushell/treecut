@@ -30,6 +30,11 @@ function [Kwhiten,A]=whiteningFilter(xs,siz)
 cov=xs'*xs;
 [uu,ss,vv]=svd(cov);
 dd=diag(ss);
+sg = ones(size(dd));
+sg(dd < 0) = -1;
+dd = abs(dd);
+dd = dd + (dd == 0).*1e-12;
+uu = bsxfun(@times, uu, sg');
 D=diag(sqrt(1./dd));
 A=uu*D*uu';
 Kwhiten=reshape(A(round(prod(siz)/2),:),siz);
