@@ -5,6 +5,8 @@ img_range = [str2num(img_s):str2num(img_t)];
 
 fprintf('===== %s set =====\n', dataset);
 fprintf('===== %d to %d=====\n', img_range(1), img_range(end));
+fprintf(fp,'===== %s set =====\n', dataset);
+fprintf(fp,'===== %d to %d=====\n', img_range(1), img_range(end));
 
 %% 
 img_dir  = ['./data/images/' dataset '/'];
