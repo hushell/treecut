@@ -18,6 +18,8 @@
 *.jpg
 *.zip
 *.gz
+*.fig
+*.txt
 
 # scripts
 *.sh
