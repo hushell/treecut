@@ -57,7 +57,7 @@ for i = 1:strid:nis
         %fprintf('==> img %d:\n', j);
         for a = 1:nalg
             temp = squeeze(grid_COV_train_ave(j,:,:,a));
-            [COV_OIS_train_all(j,a),I] = opt(temp(:),metric);
+            [COV_OIS_train_all(j,a),I] = opt(temp,metric);
             [ri,ji] = ind2sub(size(temp),I);
             %fprintf('Alg %d: COV = %f, p = %f, scal = %f; \n', ...
             %    a, COV_OIS_train_all(j,a), ps(ji), scals(ri));
@@ -70,10 +70,15 @@ j_ODS_train_ave = zeros(nalg,1); % p or k
 r_ODS_train_ave = zeros(nalg,1); % scal
 COV_OIS_train_ave = zeros(nalg,1);
 
+sc = 6;
 for i = 1:nalg
     temp = squeeze(sum(grid_COV_train_ave(:,:,:,i),1))./nis;
-    [COV_ODS_train_ave(i),I] = opt(temp(:),metric);
-    [r_ODS_train_ave(i),j_ODS_train_ave(i)] = ind2sub(size(temp),I);
+    %[COV_ODS_train_ave(i),I] = opt(temp,metric);
+    %[r_ODS_train_ave(i),j_ODS_train_ave(i)] = ind2sub(size(temp),I);
+    [COV_ODS_train_ave(i),I] = opt(temp,metric,2,sc);
+    r_ODS_train_ave(i) = sc;
+    j_ODS_train_ave(i) = I;
+
     fprintf('ave ==> ODS: Alg %d: %s_g = %f, p_g = %f, scal_g = %f; \n', ...
         i, metric, COV_ODS_train_ave(i), ps(j_ODS_train_ave(i)), scals(r_ODS_train_ave(i)));
     COV_OIS_train_ave(i) = mean(COV_OIS_train_all(:,i));
@@ -112,7 +117,7 @@ for i = 1:strid:nis
         %fprintf('==> img %d:\n', j);
         for a = 1:nalg
             temp = squeeze(grid_COV_val_ave(j,:,:,a));
-            [COV_OIS_val_all(j,a),I] = opt(temp(:),metric);
+            [COV_OIS_val_all(j,a),I] = opt(temp,metric);
             [ri,ji] = ind2sub(size(temp),I);
             %fprintf('Alg %d: COV = %f, p = %f, scal = %f; \n', ...
             %    a, COV_OIS_val_all(j,a), ps(ji), scals(ri));
@@ -127,8 +132,9 @@ COV_OIS_val_ave = zeros(nalg,1);
 
 for i = 1:nalg
     temp = squeeze(sum(grid_COV_val_ave(:,:,:,i),1))./nis;
-    [COV_ODS_val_ave(i),I] = opt(temp(:),metric);
+    [COV_ODS_val_ave(i),I] = opt(temp,metric);
     [r_ODS_val_ave(i),j_ODS_val_ave(i)] = ind2sub(size(temp),I);
+
     fprintf('ave ==> ODS: Alg %d: %s_g = %f, p_g = %f, scal_g = %f; \n', ...
         i, metric, COV_ODS_val_ave(i), ps(j_ODS_val_ave(i)), scals(r_ODS_val_ave(i)));
     COV_OIS_val_ave(i) = mean(COV_OIS_val_all(:,i));
@@ -147,11 +153,47 @@ for i = 1:nalg
 end
 
 
-function [val, I] = opt(x, metric)
-if strcmp(metric,'VOI') == 1
-    x(x==0) = +Inf;
-    [val, I] = min(x);
-else
-    [val, I] = max(x);
+function [val, I] = opt(x, metric, free_dim, fixed_val)
+if nargin < 3
+    free_dim = 0;
+    fixed_val = 0;
 end
 
+if strcmp(metric,'VOI') == 1
+    x(x==0) = +Inf;
+    [val, I] = mymin(x, free_dim, fixed_val);
+else
+    [val, I] = mymax(x, free_dim, fixed_val);
+end
+
+function [val, I] = mymax(x, free_dim, fixed_val)
+if nargin < 2
+    free_dim = 0;
+end
+
+if free_dim == 0
+    [val, I] = max(x(:));
+else
+    if nargin < 3
+        error('fixed_val on fixed_dim should be specified!');
+    end
+    [val, I] = max(x, [], free_dim);
+    val = val(fixed_val);
+    I = I(fixed_val);
+end
+
+function [val, I] = mymin(x, free_dim, fixed_val)
+if nargin < 2
+    free_dim = 0;
+end
+
+if free_dim == 0
+    [val, I] = min(x(:));
+else
+    if nargin < 3
+        error('fixed_val on fixed_dim should be specified!');
+    end
+    [val, I] = min(x, [], free_dim);
+    val = val(fixed_val);
+    I = I(fixed_val);
+end
