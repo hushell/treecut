@@ -1,7 +1,13 @@
-function test27_sampleMAP_paral(dataset,img_s, img_t)
+function test27_sampleMAP_paral(dataset,img_s, img_t, metric, schem)
 if nargin < 3
     dataset = 'train';
     img_range = [1 2];
+end
+if nargin < 4
+    metric = 'COV';
+end
+if nargin < 5
+    schem = 'ODS';
 end
 
 img_range = [str2num(img_s):str2num(img_t)];
@@ -15,7 +21,8 @@ ucm2_dir = ['./data/ucm2/' dataset '/'];
 gt_dir   = ['./data/groundTruth/' dataset '/'];
 tree_dir = ['./output/trees/' dataset '/'];
 pt_dir   = ['./output/processed_trees/' dataset '/'];
-eval_dir  = ['./output/samp_eval_sampMAP/' dataset '/'];
+grid_dir  = ['./output/grid_eval/' dataset '/'];
+eval_dir  = ['./output/samp_eval_ois/' dataset '/'];
 
 all_files = dir(ucm2_dir);
 mat       = arrayfun(@(x) ~isempty(strfind(x.name, '.mat')), all_files);
@@ -60,8 +67,18 @@ for i = img_range
     samp_nLab = zeros(N,n_sub);
     samp_COV  = zeros(N,n_sub);
 
+    % grid_metric
+    grid_metric = ['grid_' metric];
+    fil_nam = [grid_dir 'grid_img_' num2str(i) '_' name '.mat'];
+    temp = load(fil_nam, grid_metric);
+    grid_res = getfield(temp, grid_metric);
+
     p_g = 0.971283;
     scal_g = 5e-4;
+
+    % TC
+    scals = [1e-3 9e-4 8e-4 7e-4 6e-4 5e-4 4e-4 3e-4 2e-4 1e-4];
+    ps = [exp(linspace(log(0.0001), log(0.09), 5)) exp(linspace(log(0.1), log(0.79), 35)) exp(linspace(log(0.8), log(0.89), 30))               exp(linspace(log(0.9), log(0.9999), 30))];
 
     fprintf('===== img %d_%d with %d subj =====\n', i, iid, n_sub);
 
@@ -70,8 +87,16 @@ for i = img_range
         gt_sub{1}.Segmentation = double(groundTruth{s}.Segmentation);
 
         % TC-samp
-        p = p_g;
-        scal = scal_g;
+        if strcmp(schem, 'OIS')
+            temp = squeeze(grid_res(:,:,s,2));
+            [~,I] = opt(temp(:),metric);
+            [ri,ji] = ind2sub(size(temp),I);
+            p = ps(ji);
+            scal = scals(ri);
+        else
+            p = p_g;
+            scal = scal_g;
+        end
 
         [aftTree,segLabels] = inference(thisTree, p, scal); % 
 
@@ -109,4 +134,13 @@ for i=2:nargin
     savevar.(inputname(i)) = varargin{i}; % other input arguments
 end
 save(savefile,'-struct','savevar')
+
+
+function [val, I] = opt(x, metric)
+if strcmp(metric,'VOI') == 1
+    x(x==0) = +Inf;
+    [val, I] = min(x);
+else
+    [val, I] = max(x);
+end
 
