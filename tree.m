@@ -339,9 +339,10 @@ classdef tree
                     col = colmap(govern(node),:);
                     line3d(point, point1, '-', 2, col, col, 32); hold on;
                     line3d(point, point2, '-', 2, col, col, 32); hold on;
-                else
+                elseif ~govern(node) && style <= 1
                     line3d(point, point1, '-', 2, g_col, g_col, 32); hold on;
                     line3d(point, point2, '-', 2, g_col, g_col, 32); hold on;
+                else
                 end
             end
             
